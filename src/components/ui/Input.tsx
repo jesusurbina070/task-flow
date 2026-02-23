@@ -21,11 +21,14 @@ const Input: React.FC<InputProps> = ({
     };
 
     return (
-        <input
-            className={`w-full px-4 py-2 bg-surface border-2 border-transparent rounded-lg text-text-main placeholder:text-text-muted focus:outline-none focus:border-primary/50 transition-all duration-200 ${className}`}
-            onKeyDown={handleKeyDown}
-            {...props}
-        />
+        <div className="w-full">
+            <label className="sr-only">{props.placeholder || 'Entrada de texto'}</label>
+            <input
+                className={`w-full px-4 py-2 bg-surface dark:bg-gray-800 border-2 border-transparent rounded-lg text-text-main dark:text-gray-100 placeholder:text-text-muted dark:placeholder:text-gray-500 focus:outline-none focus:border-primary/50 transition-all duration-200 ${className}`}
+                onKeyDown={handleKeyDown}
+                {...props}
+            />
+        </div>
     );
 };
 

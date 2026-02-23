@@ -11,10 +11,10 @@ export default function ProgressBar({ completed, total }: ProgressBarProps) {
     return (
         <div className="space-y-2">
             <div className="flex justify-between items-end">
-                <span className="text-xs font-bold text-text-muted uppercase tracking-wider">Progreso</span>
+                <span className="text-xs font-bold text-text-muted dark:text-gray-500 uppercase tracking-wider">Progreso</span>
                 <span className="text-sm font-bold text-success">{progress}%</span>
             </div>
-            <div className="h-2 w-full bg-gray-200 rounded-full overflow-hidden">
+            <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
