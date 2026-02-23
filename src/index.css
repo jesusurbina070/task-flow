@@ -1,17 +1,15 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  :root {
-    --primary: #6366F1;
-    --surface: #FFFFFF;
-    --background: #F9FAFB;
-    --text-main: #111827;
-    --text-muted: #6B7280;
-    --success: #10B981;
-    --danger: #EF4444;
-  }
+@theme {
+  --color-primary: #6366F1;
+  --color-surface: #FFFFFF;
+  --color-background: #F9FAFB;
+  --color-text-main: #111827;
+  --color-text-muted: #6B7280;
+  --color-success: #10B981;
+  --color-danger: #EF4444;
+
+  --font-sans: "Inter", "system-ui", "sans-serif";
 }
 
 /* 
