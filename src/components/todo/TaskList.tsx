@@ -33,7 +33,7 @@ export default function TaskList({ tasks, onToggle, onDelete }: TaskListProps) {
                         </div>
                         <p className="text-text-main font-semibold">No hay tareas pendientes</p>
                         <p className="text-sm text-text-muted mt-1 max-w-[200px] text-center">
-                            ¡Tu lista está limpia! Añade una tarea nueva arriba para empezar.
+                            ¡Tu lista está limpia! Es el momento perfecto para empezar algo increíble.
                         </p>
                     </motion.div>
                 )}
