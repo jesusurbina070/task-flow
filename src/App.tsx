@@ -1,7 +1,7 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useTasks } from './hooks/useTasks'
 import TaskForm from './components/todo/TaskForm'
-import TaskItem from './components/todo/TaskItem'
+import TaskList from './components/todo/TaskList'
 
 function App() {
   const { tasks, addTask, toggleTask, deleteTask, stats } = useTasks()
@@ -29,29 +29,11 @@ function App() {
           <TaskForm onAdd={addTask} />
 
           {/* Task List */}
-          <div className="space-y-3">
-            <AnimatePresence mode="popLayout">
-              {tasks.length > 0 ? (
-                tasks.map((task) => (
-                  <TaskItem
-                    key={task.id}
-                    task={task}
-                    onToggle={toggleTask}
-                    onDelete={deleteTask}
-                  />
-                ))
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="text-center py-20 border-2 border-dashed border-gray-200 rounded-2xl"
-                >
-                  <p className="text-text-muted font-medium">No hay tareas pendientes</p>
-                  <p className="text-xs text-text-muted mt-1">¡Añade una para empezar!</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+          <TaskList
+            tasks={tasks}
+            onToggle={toggleTask}
+            onDelete={deleteTask}
+          />
         </section>
       </motion.div>
     </div>
