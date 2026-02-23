@@ -22,15 +22,17 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="group flex items-center gap-4 p-4 bg-surface border border-gray-100 rounded-xl hover:shadow-md transition-all duration-200"
+            whileHover={{ scale: 1.01 }}
+            className="group flex items-center gap-4 p-4 bg-surface dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-xl hover:shadow-md dark:hover:shadow-gray-900 transition-all duration-200"
         >
             {/* Animated Checkbox */}
             <button
                 onClick={() => onToggle(task.id)}
                 className={`relative flex items-center justify-center w-6 h-6 rounded-full border-2 transition-colors duration-200 ${task.completed
                     ? 'bg-success border-success'
-                    : 'border-gray-300 hover:border-primary'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-primary'
                     }`}
+                aria-label={task.completed ? 'Marcar como pendiente' : 'Marcar como completada'}
             >
                 <AnimatePresence>
                     {task.completed && (
@@ -48,12 +50,14 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
             {/* Task Content */}
             <div className="flex-1 min-w-0">
                 <p
-                    className={`text-sm font-medium transition-all duration-200 truncate ${task.completed ? 'text-text-muted line-through' : 'text-text-main'
+                    className={`text-sm font-medium transition-all duration-200 truncate ${task.completed
+                        ? 'text-text-muted dark:text-gray-500 line-through'
+                        : 'text-text-main dark:text-gray-100'
                         }`}
                 >
                     {task.title}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-text-muted">
+                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-text-muted dark:text-gray-500">
                     <Calendar className="w-3 h-3" />
                     <span>{formattedDate}</span>
                 </div>
@@ -62,8 +66,8 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
             {/* Delete Button (Visible on Hover) */}
             <button
                 onClick={() => onDelete(task.id)}
-                className="opacity-0 group-hover:opacity-100 p-2 text-text-muted hover:text-danger hover:bg-danger/10 rounded-lg transition-all duration-200"
-                aria-label="Delete task"
+                className="opacity-0 group-hover:opacity-100 p-2 text-text-muted dark:text-gray-500 hover:text-danger dark:hover:text-danger hover:bg-danger/10 dark:hover:bg-danger/20 rounded-lg transition-all duration-200"
+                aria-label="Eliminar tarea"
             >
                 <Trash2 className="w-4 h-4" />
             </button>

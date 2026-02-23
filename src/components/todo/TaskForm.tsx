@@ -21,7 +21,7 @@ export default function TaskForm({ onAdd }: TaskFormProps) {
     return (
         <form
             onSubmit={handleSubmit}
-            className="flex items-center gap-3 p-4 bg-surface rounded-xl shadow-sm border border-gray-100"
+            className="flex items-center gap-3 p-4 bg-surface dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors"
         >
             <div className="flex-1">
                 <Input
@@ -29,7 +29,8 @@ export default function TaskForm({ onAdd }: TaskFormProps) {
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
                     onEnter={handleSubmit}
-                    className="px-0 py-0 border-none focus:border-none ring-0 focus:ring-0 text-lg font-medium"
+                    className="px-0 py-0 border-none focus:border-none ring-0 focus:ring-0 text-lg font-medium bg-transparent dark:bg-transparent"
+                    autoFocus
                 />
             </div>
             <Button
@@ -37,6 +38,7 @@ export default function TaskForm({ onAdd }: TaskFormProps) {
                 variant="primary"
                 className="h-10 w-10 !p-0 flex items-center justify-center rounded-lg shadow-md shadow-primary/20"
                 disabled={!title.trim()}
+                aria-label="Añadir nueva tarea"
             >
                 <Plus className="w-6 h-6" />
             </Button>
