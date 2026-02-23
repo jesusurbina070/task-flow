@@ -14,7 +14,7 @@ function App() {
         </div>
         <h1 className="text-2xl font-bold text-text-main mb-2 font-sans">TaskFlow Phase 1</h1>
         <p className="text-text-muted mb-6">
-          Estructura y estilos configurados correctamente.
+          Estructura y estilos configurados correctamente realizados.
         </p>
         <button className="bg-primary text-white px-6 py-2 rounded-lg font-medium hover:opacity-90 transition-opacity">
           Comenzar
