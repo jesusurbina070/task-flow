@@ -9,6 +9,7 @@ export interface Task {
   completed: boolean;
   createdAt: number;
   tag: string;
+  dueDate?: string;
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -30,8 +31,9 @@ export function useTasks() {
    * Añadir una nueva tarea
    * @param title Texto de la tarea
    * @param tag Etiqueta de la tarea
+   * @param dueDate Fecha de vencimiento
    */
-  const addTask = (title: string, tag = 'General') => {
+  const addTask = (title: string, tag = 'General', dueDate?: string) => {
     if (!title.trim()) return;
 
     const newTask: Task = {
@@ -40,6 +42,7 @@ export function useTasks() {
       completed: false,
       createdAt: Date.now(),  
       tag: tag.trim(),
+      dueDate,
     };
 
     setTasks((prev) => [newTask, ...prev]);
