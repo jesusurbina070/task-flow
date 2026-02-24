@@ -3,12 +3,15 @@ import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
 
+export type Priority = 'low' | 'medium' | 'high';
+
 export interface Task {
   id: string;
   title: string;
   completed: boolean;
   createdAt: number;
   tag: string;
+  priority: Priority;
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -30,8 +33,9 @@ export function useTasks() {
    * Añadir una nueva tarea
    * @param title Texto de la tarea
    * @param tag Etiqueta de la tarea
+   * @param priority Prioridad de la tarea
    */
-  const addTask = (title: string, tag = 'General') => {
+  const addTask = (title: string, tag = 'General', priority: Priority = 'medium') => {
     if (!title.trim()) return;
 
     const newTask: Task = {
@@ -40,6 +44,7 @@ export function useTasks() {
       completed: false,
       createdAt: Date.now(),  
       tag: tag.trim(),
+      priority,
     };
 
     setTasks((prev) => [newTask, ...prev]);
