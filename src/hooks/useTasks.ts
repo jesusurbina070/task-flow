@@ -7,6 +7,7 @@ export interface Task {
   title: string;
   completed: boolean;
   createdAt: number;
+  tag: string;
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -23,8 +24,9 @@ export function useTasks() {
   /**
    * Añadir una nueva tarea
    * @param title Texto de la tarea
+   * @param tag Categoría de la tarea
    */
-  const addTask = (title: string) => {
+  const addTask = (title: string, tag: string = 'General') => {
     if (!title.trim()) return;
 
     const newTask: Task = {
@@ -32,6 +34,7 @@ export function useTasks() {
       title: title.trim(),
       completed: false,
       createdAt: Date.now(),
+      tag: tag.trim(),
     };
 
     setTasks((prev) => [newTask, ...prev]);
