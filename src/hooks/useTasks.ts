@@ -1,4 +1,4 @@
-import { useMemo, useState, useReducer, useEffect } from 'react';
+import { useMemo, useReducer, useEffect } from 'react';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
 
