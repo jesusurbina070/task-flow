@@ -18,21 +18,23 @@ export default function TaskFilters({ currentFilter, onFilterChange, stats }: Ta
     ];
 
     return (
-        <div className="flex items-center gap-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-xl">
+        <div className="flex items-center bg-gray-100/30 dark:bg-slate-800/50 backdrop-blur-sm rounded-full p-1 border border-transparent dark:border-slate-700/50 mx-auto w-max max-w-sm">
             {filters.map((filter) => {
                 const isActive = currentFilter === filter.value;
                 return (
                     <button
                         key={filter.value}
                         onClick={() => onFilterChange(filter.value)}
-                        className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${isActive
-                            ? 'bg-white dark:bg-gray-700 text-primary shadow-sm ring-1 ring-black/5 dark:ring-white/10'
-                            : 'text-text-muted dark:text-gray-400 hover:text-text-main dark:hover:text-white hover:bg-white/50 dark:hover:bg-gray-700/50'
+                        className={`flex items-center justify-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300 ${isActive
+                            ? 'bg-white dark:bg-slate-700 text-primary dark:text-indigo-400 shadow-sm dark:shadow-none'
+                            : 'text-text-muted dark:text-slate-500 hover:text-text-main dark:hover:text-slate-300 bg-transparent'
                             }`}
                     >
-                        {filter.label}
+                        <span>{filter.label}</span>
                         <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-full ${isActive ? 'bg-primary/10 text-primary' : 'bg-gray-200 dark:bg-gray-700 text-text-muted dark:text-gray-400'
+                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold tabular-nums transition-colors ${isActive
+                                ? 'bg-primary/10 dark:bg-indigo-400/10 text-primary dark:text-indigo-400'
+                                : 'bg-gray-200/50 dark:bg-slate-800/50 text-text-muted dark:text-slate-500'
                                 }`}
                         >
                             {filter.count}

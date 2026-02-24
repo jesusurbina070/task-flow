@@ -13,6 +13,9 @@ function App() {
     addTask,
     toggleTask,
     deleteTask,
+    addSubtask,
+    toggleSubtask,
+    deleteSubtask,
     stats,
     filter,
     setFilter,
@@ -21,7 +24,7 @@ function App() {
   } = useTasks()
 
   return (
-    <div className="min-h-screen bg-background text-text-main flex flex-col items-center py-12 px-4 sm:px-6 font-sans transition-colors duration-300">
+    <div className="min-h-screen bg-background dark:bg-[#0f172a] text-text-main dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-6 font-sans transition-colors duration-300">
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -57,18 +60,19 @@ function App() {
             tasks={tasks}
             onToggle={toggleTask}
             onDelete={deleteTask}
+            onAddSubtask={addSubtask}
+            onToggleSubtask={toggleSubtask}
+            onDeleteSubtask={deleteSubtask}
           />
         </section>
 
         {/* Filters Section (Sticky at bottom or just at the end) */}
-        <section className="sticky bottom-8 mt-4">
-          <div className="bg-surface/80 backdrop-blur-md p-2 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 transition-colors">
-            <TaskFilters
-              currentFilter={filter}
-              onFilterChange={setFilter}
-              stats={stats}
-            />
-          </div>
+        <section className="sticky bottom-8 mt-2 flex justify-center z-10 w-full">
+          <TaskFilters
+            currentFilter={filter}
+            onFilterChange={setFilter}
+            stats={stats}
+          />
         </section>
       </motion.div>
     </div>

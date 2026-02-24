@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* 1. Definimos las variables CSS puras */
 :root {
   --bg: #F9FAFB;
@@ -10,10 +12,10 @@
 
 /* 2. Sobrescribimos las variables cuando existe la clase .dark */
 .dark {
-  --bg: #111827;
-  --surf: #1F2937;
-  --t-main: #F9FAFB;
-  --t-muted: #9CA3AF;
+  --bg: #0f172a;
+  --surf: #1e293b;
+  --t-main: #f8fafc;
+  --t-muted: #94a3b8;
 }
 
 /* 3. Mapeamos Tailwind a estas variables */
