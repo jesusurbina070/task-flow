@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Check, Calendar } from 'lucide-react';
+import TagBadge from '../ui/TagBadge';
 import type { Task } from '../../hooks/useTasks';
 
 interface TaskItemProps {
@@ -62,16 +63,7 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
                         <Calendar className="w-3 h-3" />
                         <span>{formattedDate}</span>
                     </div>
-                    {task.tag && (
-                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${task.tag === 'Urgente' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
-                                task.tag === 'Zerto' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' :
-                                    task.tag === 'Personal' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
-                                        task.tag === 'Trabajo' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
-                                            'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
-                            }`}>
-                            {task.tag}
-                        </span>
-                    )}
+                    {task.tag && <TagBadge tag={task.tag} />}
                 </div>
             </div>
 
