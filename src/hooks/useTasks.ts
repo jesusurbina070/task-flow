@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/ids';
+import { useDebounce } from './useDebounce';
 
 export interface Task {
   id: string;
@@ -16,8 +17,11 @@ export function useTasks() {
   // Persistencia de tareas en LocalStorage
   const [tasks, setTasks] = useLocalStorage<Task[]>('task-flow-tasks', []);
   
-  // Estado para el filtro actual (no necesariamente persistido, o sí, pero el requerimiento no lo obliga)
+  // Estado para el filtro actual
   const [filter, setFilter] = useState<FilterStatus>('all');
+  
+  // Estado para la búsqueda
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Funciones CRUD
   
@@ -80,17 +84,28 @@ export function useTasks() {
     setTasks((prev) => prev.filter((task) => !task.completed));
   };
 
-  // Lógica de filtrado dinámico
+  // Lógica de filtrado y búsqueda dinámicos
   const filteredTasks = useMemo(() => {
-    switch (filter) {
-      case 'active':
-        return tasks.filter((t) => !t.completed);
-      case 'completed':
-        return tasks.filter((t) => t.completed);
-      default:
-        return tasks;
+    let result = tasks;
+
+    // Primero aplicamos el filtro de estado
+    if (filter === 'active') {
+      result = result.filter((t) => !t.completed);
+    } else if (filter === 'completed') {
+      result = result.filter((t) => t.completed);
     }
-  }, [tasks, filter]);
+
+    // Luego aplicamos el filtro de búsqueda
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      result = result.filter((t) => 
+        t.title.toLowerCase().includes(query) || 
+        t.tag.toLowerCase().includes(query)
+      );
+    }
+
+    return result;
+  }, [tasks, filter, searchQuery]);
 
   // Estadísticas rápidas
   const stats = useMemo(() => ({
@@ -101,9 +116,11 @@ export function useTasks() {
 
   return {
     tasks: filteredTasks,
-    allTasks: tasks, // Por si se necesita la lista completa sin filtrar
+    allTasks: tasks,
     filter,
     setFilter,
+    searchQuery,
+    setSearchQuery,
     addTask,
     toggleTask,
     deleteTask,
