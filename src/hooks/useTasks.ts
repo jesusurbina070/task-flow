@@ -22,6 +22,7 @@ export function useTasks() {
   
   // Estado para la búsqueda
   const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
   // Funciones CRUD
   
@@ -96,8 +97,8 @@ export function useTasks() {
     }
 
     // Luego aplicamos el filtro de búsqueda
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase().trim();
+    if (debouncedSearchQuery.trim()) {
+      const query = debouncedSearchQuery.toLowerCase().trim();
       result = result.filter((t) => 
         t.title.toLowerCase().includes(query) || 
         t.tag.toLowerCase().includes(query)
@@ -105,7 +106,7 @@ export function useTasks() {
     }
 
     return result;
-  }, [tasks, filter, searchQuery]);
+  }, [tasks, filter, debouncedSearchQuery]);
 
   // Estadísticas rápidas
   const stats = useMemo(() => ({
