@@ -5,9 +5,21 @@ import TaskList from './components/todo/TaskList'
 import ProgressBar from './components/todo/ProgressBar'
 import TaskFilters from './components/todo/TaskFilters'
 import ThemeToggle from './components/ui/ThemeToggle'
+import SearchBar from './components/ui/SearchBar'
 
 function App() {
-  const { tasks, addTask, toggleTask, deleteTask, stats, filter, setFilter } = useTasks()
+  const {
+    tasks,
+    addTask,
+    toggleTask,
+    deleteTask,
+    stats,
+    filter,
+    setFilter,
+    searchQuery,
+    setSearchQuery
+  } = useTasks()
+
   const secret = '1234567890'
   console.log(secret)
 
@@ -26,6 +38,11 @@ function App() {
           </div>
           <ThemeToggle />
         </header>
+
+        {/* Search Section */}
+        <section>
+          <SearchBar value={searchQuery} onChange={setSearchQuery} />
+        </section>
 
         {/* Stats Section (Progress Bar) */}
         <section className="bg-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 transition-colors">
