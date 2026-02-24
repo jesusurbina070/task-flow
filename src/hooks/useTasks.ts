@@ -1,8 +1,14 @@
-import { useMemo, useState, useReducer, useEffect } from 'react';
+import { useMemo, useReducer, useEffect } from 'react';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
 
 export type Priority = 'low' | 'medium' | 'high';
+
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
 
 export interface Task {
   id: string;
@@ -12,6 +18,7 @@ export interface Task {
   tag: string;
   dueDate?: string;
   priority: Priority;
+  subtasks: Subtask[];
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -31,7 +38,9 @@ type TaskAction =
   | { type: 'UPDATE_TASK'; payload: { id: string; title: string } }
   | { type: 'CLEAR_COMPLETED' }
   | { type: 'SET_FILTER'; payload: FilterStatus }
-  | { type: 'SET_SEARCH_QUERY'; payload: string };
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'ADD_SUBTASK'; payload: { taskId: string; title: string } }
+  | { type: 'TOGGLE_SUBTASK'; payload: { taskId: string; subtaskId: string } };
 
 // --- Reducer Function ---
 
@@ -46,6 +55,7 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
         tag: action.payload.tag.trim(),
         dueDate: action.payload.dueDate,
         priority: action.payload.priority,
+        subtasks: [],
       };
       return { ...state, tasks: [newTask, ...state.tasks] };
     }
@@ -79,6 +89,36 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
       return { ...state, filter: action.payload };
     case 'SET_SEARCH_QUERY':
       return { ...state, searchQuery: action.payload };
+    case 'ADD_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload.taskId) {
+            const newSubtask: Subtask = {
+              id: generateId(),
+              title: action.payload.title.trim(),
+              completed: false,
+            };
+            return { ...task, subtasks: [...task.subtasks, newSubtask] };
+          }
+          return task;
+        }),
+      };
+    case 'TOGGLE_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload.taskId) {
+            return {
+              ...task,
+              subtasks: task.subtasks.map((st) =>
+                st.id === action.payload.subtaskId ? { ...st, completed: !st.completed } : st
+              ),
+            };
+          }
+          return task;
+        }),
+      };
     default:
       return state;
   }
@@ -105,6 +145,7 @@ export function useTasks() {
   // Funciones CRUD (Disparan acciones)
 
   const addTask = (title: string, tag = 'General', dueDate?: string, priority: Priority = 'medium') => {
+    if (!title.trim()) return;
     dispatch({ type: 'ADD_TASK', payload: { title, tag, dueDate, priority } });
   };
 
@@ -130,6 +171,24 @@ export function useTasks() {
 
   const setSearchQuery = (query: string) => {
     dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
+  };
+
+  /**
+   * Añadir una subtarea a una tarea existente
+   * @param taskId ID de la tarea padre
+   * @param title Texto de la subtarea
+   */
+  const addSubtask = (taskId: string, title: string) => {
+    dispatch({ type: 'ADD_SUBTASK', payload: { taskId, title } });
+  };
+
+  /**
+   * Alternar el estado de completado de una subtarea
+   * @param taskId ID de la tarea padre
+   * @param subtaskId ID de la subtarea
+   */
+  const toggleSubtask = (taskId: string, subtaskId: string) => {
+    dispatch({ type: 'TOGGLE_SUBTASK', payload: { taskId, subtaskId } });
   };
 
   // Lógica de filtrado y búsqueda dinámicos
@@ -174,6 +233,9 @@ export function useTasks() {
     deleteTask,
     updateTask,
     clearCompleted,
+    addSubtask,
+    toggleSubtask,
     stats,
   };
 }
+
