@@ -3,6 +3,8 @@ import { useLocalStorage } from './useLocalStorage';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
 
+export type Priority = 'low' | 'medium' | 'high';
+
 export interface Task {
   id: string;
   title: string;
@@ -10,6 +12,7 @@ export interface Task {
   createdAt: number;
   tag: string;
   dueDate?: string;
+  priority: Priority;
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -32,8 +35,10 @@ export function useTasks() {
    * @param title Texto de la tarea
    * @param tag Etiqueta de la tarea
    * @param dueDate Fecha de vencimiento
+   * @param priority Prioridad de la tarea
    */
-  const addTask = (title: string, tag = 'General', dueDate?: string) => {
+  
+  const addTask = (title: string, tag = 'General', dueDate?: string, priority: Priority = 'medium') => {
     if (!title.trim()) return;
 
     const newTask: Task = {
@@ -43,6 +48,7 @@ export function useTasks() {
       createdAt: Date.now(),  
       tag: tag.trim(),
       dueDate,
+      priority,
     };
 
     setTasks((prev) => [newTask, ...prev]);
