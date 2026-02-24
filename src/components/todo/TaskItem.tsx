@@ -57,9 +57,21 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
                 >
                     {task.title}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-text-muted dark:text-gray-500">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formattedDate}</span>
+                <div className="flex items-center gap-3 mt-1.5">
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-muted dark:text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formattedDate}</span>
+                    </div>
+                    {task.tag && (
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${task.tag === 'Urgente' ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' :
+                                task.tag === 'Zerto' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400' :
+                                    task.tag === 'Personal' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                                        task.tag === 'Trabajo' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
+                                            'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400'
+                            }`}>
+                            {task.tag}
+                        </span>
+                    )}
                 </div>
             </div>
 
