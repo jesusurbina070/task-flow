@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { Trash2, Check, Calendar } from 'lucide-react';
+import TagBadge from '../ui/TagBadge';
 import type { Task } from '../../hooks/useTasks';
 
 interface TaskItemProps {
@@ -57,9 +58,12 @@ export default function TaskItem({ task, onToggle, onDelete }: TaskItemProps) {
                 >
                     {task.title}
                 </p>
-                <div className="flex items-center gap-1.5 mt-1 text-[10px] text-text-muted dark:text-gray-500">
-                    <Calendar className="w-3 h-3" />
-                    <span>{formattedDate}</span>
+                <div className="flex items-center gap-3 mt-1.5">
+                    <div className="flex items-center gap-1.5 text-[10px] text-text-muted dark:text-gray-500">
+                        <Calendar className="w-3 h-3" />
+                        <span>{formattedDate}</span>
+                    </div>
+                    {task.tag && <TagBadge tag={task.tag} />}
                 </div>
             </div>
 
