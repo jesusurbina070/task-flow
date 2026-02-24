@@ -20,9 +20,6 @@ function App() {
     setSearchQuery
   } = useTasks()
 
-  const secret = '1234567890'
-  console.log(secret)
-
   return (
     <div className="min-h-screen bg-background text-text-main flex flex-col items-center py-12 px-4 sm:px-6 font-sans transition-colors duration-300">
       <motion.div

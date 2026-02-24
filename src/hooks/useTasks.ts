@@ -29,16 +29,16 @@ export function useTasks() {
   /**
    * Añadir una nueva tarea
    * @param title Texto de la tarea
-   * @param tag Categoría de la tarea
+   * @param tag Etiqueta de la tarea
    */
-  const addTask = (title: string, tag: string = 'General') => {
+  const addTask = (title: string, tag = 'General') => {
     if (!title.trim()) return;
 
     const newTask: Task = {
       id: generateId(),
       title: title.trim(),
       completed: false,
-      createdAt: Date.now(),
+      createdAt: Date.now(),  
       tag: tag.trim(),
     };
 
