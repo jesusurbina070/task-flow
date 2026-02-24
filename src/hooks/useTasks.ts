@@ -5,6 +5,12 @@ import { useDebounce } from './useDebounce';
 
 export type Priority = 'low' | 'medium' | 'high';
 
+export interface Subtask {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
 export interface Task {
   id: string;
   title: string;
@@ -13,6 +19,7 @@ export interface Task {
   tag: string;
   dueDate?: string;
   priority: Priority;
+  subtasks: Subtask[];
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -49,6 +56,7 @@ export function useTasks() {
       tag: tag.trim(),
       dueDate,
       priority,
+      subtasks: [],
     };
 
     setTasks((prev) => [newTask, ...prev]);
@@ -94,6 +102,50 @@ export function useTasks() {
     setTasks((prev) => prev.filter((task) => !task.completed));
   };
 
+  /**
+   * Añadir una subtarea a una tarea existente
+   * @param taskId ID de la tarea padre
+   * @param title Texto de la subtarea
+   */
+  const addSubtask = (taskId: string, title: string) => {
+    if (!title.trim()) return;
+
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id === taskId) {
+          const newSubtask: Subtask = {
+            id: generateId(),
+            title: title.trim(),
+            completed: false,
+          };
+          return { ...task, subtasks: [...task.subtasks, newSubtask] };
+        }
+        return task;
+      })
+    );
+  };
+
+  /**
+   * Alternar el estado de completado de una subtarea
+   * @param taskId ID de la tarea padre
+   * @param subtaskId ID de la subtarea
+   */
+  const toggleSubtask = (taskId: string, subtaskId: string) => {
+    setTasks((prev) =>
+      prev.map((task) => {
+        if (task.id === taskId) {
+          return {
+            ...task,
+            subtasks: task.subtasks.map((st) =>
+              st.id === subtaskId ? { ...st, completed: !st.completed } : st
+            ),
+          };
+        }
+        return task;
+      })
+    );
+  };
+
   // Lógica de filtrado y búsqueda dinámicos
   const filteredTasks = useMemo(() => {
     let result = tasks;
@@ -136,6 +188,9 @@ export function useTasks() {
     deleteTask,
     updateTask,
     clearCompleted,
+    addSubtask,
+    toggleSubtask,
     stats,
   };
 }
+
