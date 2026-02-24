@@ -1,5 +1,4 @@
-import { useMemo, useState } from 'react';
-import { useLocalStorage } from './useLocalStorage';
+import { useMemo, useState, useReducer, useEffect } from 'react';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
 
@@ -24,82 +23,154 @@ export interface Task {
 
 export type FilterStatus = 'all' | 'active' | 'completed';
 
+// --- Reducer Types ---
+
+interface TaskState {
+  tasks: Task[];
+  filter: FilterStatus;
+  searchQuery: string;
+}
+
+type TaskAction =
+  | { type: 'ADD_TASK'; payload: { title: string; tag: string; dueDate?: string; priority: Priority } }
+  | { type: 'TOGGLE_TASK'; payload: string }
+  | { type: 'DELETE_TASK'; payload: string }
+  | { type: 'UPDATE_TASK'; payload: { id: string; title: string } }
+  | { type: 'CLEAR_COMPLETED' }
+  | { type: 'SET_FILTER'; payload: FilterStatus }
+  | { type: 'SET_SEARCH_QUERY'; payload: string }
+  | { type: 'ADD_SUBTASK'; payload: { taskId: string; title: string } }
+  | { type: 'TOGGLE_SUBTASK'; payload: { taskId: string; subtaskId: string } };
+
+// --- Reducer Function ---
+
+function taskReducer(state: TaskState, action: TaskAction): TaskState {
+  switch (action.type) {
+    case 'ADD_TASK': {
+      const newTask: Task = {
+        id: generateId(),
+        title: action.payload.title.trim(),
+        completed: false,
+        createdAt: Date.now(),
+        tag: action.payload.tag.trim(),
+        dueDate: action.payload.dueDate,
+        priority: action.payload.priority,
+        subtasks: [],
+      };
+      return { ...state, tasks: [newTask, ...state.tasks] };
+    }
+    case 'TOGGLE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload ? { ...task, completed: !task.completed } : task
+        ),
+      };
+    case 'DELETE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => task.id !== action.payload),
+      };
+    case 'UPDATE_TASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) =>
+          task.id === action.payload.id
+            ? { ...task, title: action.payload.title.trim() }
+            : task
+        ),
+      };
+    case 'CLEAR_COMPLETED':
+      return {
+        ...state,
+        tasks: state.tasks.filter((task) => !task.completed),
+      };
+    case 'SET_FILTER':
+      return { ...state, filter: action.payload };
+    case 'SET_SEARCH_QUERY':
+      return { ...state, searchQuery: action.payload };
+    case 'ADD_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload.taskId) {
+            const newSubtask: Subtask = {
+              id: generateId(),
+              title: action.payload.title.trim(),
+              completed: false,
+            };
+            return { ...task, subtasks: [...task.subtasks, newSubtask] };
+          }
+          return task;
+        }),
+      };
+    case 'TOGGLE_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload.taskId) {
+            return {
+              ...task,
+              subtasks: task.subtasks.map((st) =>
+                st.id === action.payload.subtaskId ? { ...st, completed: !st.completed } : st
+              ),
+            };
+          }
+          return task;
+        }),
+      };
+    default:
+      return state;
+  }
+}
+
+// --- Hook ---
+
 export function useTasks() {
-  // Persistencia de tareas en LocalStorage
-  const [tasks, setTasks] = useLocalStorage<Task[]>('task-flow-tasks', []);
-  
-  // Estado para el filtro actual
-  const [filter, setFilter] = useState<FilterStatus>('all');
-  
-  // Estado para la búsqueda
-  const [searchQuery, setSearchQuery] = useState('');
+  // Inicializamos el estado desde LocalStorage
+  const [state, dispatch] = useReducer(taskReducer, {
+    tasks: JSON.parse(localStorage.getItem('task-flow-tasks') || '[]'),
+    filter: 'all',
+    searchQuery: '',
+  });
+
+  // Sincronización con LocalStorage
+  useEffect(() => {
+    localStorage.setItem('task-flow-tasks', JSON.stringify(state.tasks));
+  }, [state.tasks]);
+
+  const { tasks, filter, searchQuery } = state;
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Funciones CRUD
-  
-  /**
-   * Añadir una nueva tarea
-   * @param title Texto de la tarea
-   * @param tag Etiqueta de la tarea
-   * @param dueDate Fecha de vencimiento
-   * @param priority Prioridad de la tarea
-   */
-  
+  // Funciones CRUD (Disparan acciones)
+
   const addTask = (title: string, tag = 'General', dueDate?: string, priority: Priority = 'medium') => {
     if (!title.trim()) return;
-
-    const newTask: Task = {
-      id: generateId(),
-      title: title.trim(),
-      completed: false,
-      createdAt: Date.now(),  
-      tag: tag.trim(),
-      dueDate,
-      priority,
-      subtasks: [],
-    };
-
-    setTasks((prev) => [newTask, ...prev]);
+    dispatch({ type: 'ADD_TASK', payload: { title, tag, dueDate, priority } });
   };
 
-  /**
-   * Alternar el estado de completado de una tarea
-   * @param id ID de la tarea
-   */
   const toggleTask = (id: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, completed: !task.completed } : task
-      )
-    );
+    dispatch({ type: 'TOGGLE_TASK', payload: id });
   };
 
-  /**
-   * Eliminar una tarea
-   * @param id ID de la tarea
-   */
   const deleteTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id));
+    dispatch({ type: 'DELETE_TASK', payload: id });
   };
 
-  /**
-   * Actualizar el texto de una tarea
-   * @param id ID de la tarea
-   * @param newTitle Nuevo texto
-   */
   const updateTask = (id: string, newTitle: string) => {
-    setTasks((prev) =>
-      prev.map((task) =>
-        task.id === id ? { ...task, title: newTitle.trim() } : task
-      )
-    );
+    dispatch({ type: 'UPDATE_TASK', payload: { id, title: newTitle } });
   };
 
-  /**
-   * Limpiar todas las tareas completadas
-   */
   const clearCompleted = () => {
-    setTasks((prev) => prev.filter((task) => !task.completed));
+    dispatch({ type: 'CLEAR_COMPLETED' });
+  };
+
+  const setFilter = (filter: FilterStatus) => {
+    dispatch({ type: 'SET_FILTER', payload: filter });
+  };
+
+  const setSearchQuery = (query: string) => {
+    dispatch({ type: 'SET_SEARCH_QUERY', payload: query });
   };
 
   /**
@@ -108,21 +179,7 @@ export function useTasks() {
    * @param title Texto de la subtarea
    */
   const addSubtask = (taskId: string, title: string) => {
-    if (!title.trim()) return;
-
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === taskId) {
-          const newSubtask: Subtask = {
-            id: generateId(),
-            title: title.trim(),
-            completed: false,
-          };
-          return { ...task, subtasks: [...task.subtasks, newSubtask] };
-        }
-        return task;
-      })
-    );
+    dispatch({ type: 'ADD_SUBTASK', payload: { taskId, title } });
   };
 
   /**
@@ -131,19 +188,7 @@ export function useTasks() {
    * @param subtaskId ID de la subtarea
    */
   const toggleSubtask = (taskId: string, subtaskId: string) => {
-    setTasks((prev) =>
-      prev.map((task) => {
-        if (task.id === taskId) {
-          return {
-            ...task,
-            subtasks: task.subtasks.map((st) =>
-              st.id === subtaskId ? { ...st, completed: !st.completed } : st
-            ),
-          };
-        }
-        return task;
-      })
-    );
+    dispatch({ type: 'TOGGLE_SUBTASK', payload: { taskId, subtaskId } });
   };
 
   // Lógica de filtrado y búsqueda dinámicos
