@@ -15,6 +15,7 @@ function App() {
     addSubtask,
     toggleSubtask,
     deleteSubtask,
+    reorderTasks,
     stats,
     filter,
     setFilter,
@@ -57,6 +58,9 @@ function App() {
             onAddSubtask={addSubtask}
             onToggleSubtask={toggleSubtask}
             onDeleteSubtask={deleteSubtask}
+            onReorder={reorderTasks}
+            currentFilter={filter}
+            searchQuery={searchQuery}
           />
         </section>
 
