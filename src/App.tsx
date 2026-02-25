@@ -2,7 +2,6 @@ import { motion } from 'framer-motion'
 import { useTasks } from './hooks/useTasks'
 import TaskForm from './components/todo/TaskForm'
 import TaskList from './components/todo/TaskList'
-import ProgressBar from './components/todo/ProgressBar'
 import TaskFilters from './components/todo/TaskFilters'
 import ThemeToggle from './components/ui/ThemeToggle'
 import SearchBar from './components/ui/SearchBar'
@@ -42,11 +41,6 @@ function App() {
         {/* Search Section */}
         <section>
           <SearchBar value={searchQuery} onChange={setSearchQuery} />
-        </section>
-
-        {/* Stats Section (Progress Bar) */}
-        <section className="bg-surface p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 transition-colors">
-          <ProgressBar completed={stats.completed} total={stats.total} />
         </section>
 
         {/* Input Section */}
