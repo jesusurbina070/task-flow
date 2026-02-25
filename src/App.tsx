@@ -33,7 +33,7 @@ function App() {
         <header className="flex items-start justify-between">
           <div className="flex flex-col gap-1">
             <h1 className="text-4xl font-extrabold tracking-tight">TaskFlow</h1>
-            <p className="text-text-muted transition-colors">Organiza tu día con facilidad y estilo.</p>
+            <p className="text-text-muted transition-colors">Domina tus tareas, potencia tu productividad.</p>
           </div>
           <ThemeToggle />
         </header>
