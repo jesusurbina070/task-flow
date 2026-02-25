@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trash2, Check, Calendar, Plus } from 'lucide-react';
+import { Trash2, Check, Calendar, Plus, GripVertical } from 'lucide-react';
 import type { Task } from '../../hooks/useTasks';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface TaskItemProps {
     task: Task;
@@ -10,6 +12,7 @@ interface TaskItemProps {
     onAddSubtask: (taskId: string, title: string) => void;
     onToggleSubtask: (taskId: string, subtaskId: string) => void;
     onDeleteSubtask: (taskId: string, subtaskId: string) => void;
+    dragDisabled?: boolean;
 }
 
 export default function TaskItem({
@@ -18,10 +21,27 @@ export default function TaskItem({
     onDelete,
     onAddSubtask,
     onToggleSubtask,
-    onDeleteSubtask
+    onDeleteSubtask,
+    dragDisabled = false
 }: TaskItemProps) {
     const [subtaskTitle, setSubtaskTitle] = useState('');
-    const [isExpanded, setIsExpanded] = useState(true); // Default to true as per image or choice
+    const [isExpanded, setIsExpanded] = useState(true);
+
+    const {
+        attributes,
+        listeners,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging
+    } = useSortable({ id: task.id });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 50 : 'auto',
+        opacity: isDragging ? 0.6 : 1,
+    };
 
     const formattedDate = new Date(task.createdAt).toLocaleDateString(undefined, {
         month: 'short',
@@ -43,16 +63,21 @@ export default function TaskItem({
 
     return (
         <motion.div
+            ref={setNodeRef}
+            style={style}
+            {...attributes}
+            {...listeners}
             layout
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="group/main bg-white dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/50 rounded-2xl shadow-sm dark:shadow-none backdrop-blur-md overflow-hidden relative transition-colors duration-200"
+            className={`group/main bg-white dark:bg-slate-800/80 border border-gray-100 dark:border-slate-700/50 rounded-2xl shadow-sm dark:shadow-none backdrop-blur-md overflow-hidden relative transition-colors duration-200 ${isDragging ? 'shadow-xl ring-2 ring-primary/20 cursor-grabbing' : 'cursor-grab'
+                } ${dragDisabled ? 'cursor-default' : ''}`}
         >
             {/* 1. Header Area */}
             <div className="p-5 flex flex-col gap-3">
                 <div className="flex items-center gap-4">
                     {/* Main Checkbox */}
-                    <div className="relative group/check">
+                    <div className="relative group/check" onPointerDown={(e) => e.stopPropagation()}>
                         <input
                             type="checkbox"
                             id={taskId}
@@ -94,6 +119,7 @@ export default function TaskItem({
                     </div>
 
                     <button
+                        onPointerDown={(e) => e.stopPropagation()}
                         onClick={() => onDelete(task.id)}
                         className="p-2 opacity-0 group-hover/main:opacity-100 text-text-muted dark:text-slate-500 hover:text-danger dark:hover:text-red-400 hover:bg-danger/5 dark:hover:bg-red-400/10 rounded-lg transition-all"
                         aria-label="Eliminar tarea"
@@ -107,7 +133,7 @@ export default function TaskItem({
             <div className="border-t border-gray-50 dark:border-slate-700/50" />
 
             {/* 2. Subtasks Tree Area */}
-            <div className="relative pt-3 pb-4 pl-4 pr-5 flex flex-col gap-1">
+            <div className="relative pt-3 pb-4 pl-4 pr-5 flex flex-col gap-1" onPointerDown={(e) => e.stopPropagation()}>
                 {/* Vertical Tree Line */}
                 <div className="absolute left-[33px] top-0 bottom-8 w-px bg-gray-200 dark:bg-slate-700" />
 
@@ -127,17 +153,7 @@ export default function TaskItem({
                 )}
 
                 <AnimatePresence>
-                    {isExpanded && completedSubtasks.map((st) => (
-                        <SubtaskItem
-                            key={st.id}
-                            subId={st.id}
-                            title={st.title}
-                            completed={st.completed}
-                            onToggle={() => onToggleSubtask(task.id, st.id)}
-                            onDelete={() => onDeleteSubtask(task.id, st.id)}
-                        />
-                    ))}
-                    {activeSubtasks.map((st) => (
+                    {(isExpanded ? [...completedSubtasks, ...activeSubtasks] : activeSubtasks).map((st) => (
                         <SubtaskItem
                             key={st.id}
                             subId={st.id}
@@ -203,3 +219,4 @@ function SubtaskItem({ subId, title, completed, onToggle, onDelete }: { subId: s
         </div>
     );
 }
+

@@ -1,6 +1,7 @@
 import { useMemo, useReducer, useEffect } from 'react';
 import { generateId } from '../utils/ids';
 import { useDebounce } from './useDebounce';
+import { useLocalStorage } from './useLocalStorage';
 
 export type Priority = 'low' | 'medium' | 'high';
 
@@ -19,6 +20,7 @@ export interface Task {
   dueDate?: string;
   priority: Priority;
   subtasks: Subtask[];
+  position: number;
 }
 
 export type FilterStatus = 'all' | 'active' | 'completed';
@@ -41,12 +43,15 @@ type TaskAction =
   | { type: 'SET_SEARCH_QUERY'; payload: string }
   | { type: 'ADD_SUBTASK'; payload: { taskId: string; title: string } }
   | { type: 'TOGGLE_SUBTASK'; payload: { taskId: string; subtaskId: string } }
-  | { type: 'DELETE_SUBTASK'; payload: { taskId: string; subtaskId: string } };
+  | { type: 'DELETE_SUBTASK'; payload: { taskId: string; subtaskId: string } }
+  | { type: 'REORDER_TASKS'; payload: Task[] };
 
 // --- Reducer Function ---
 
 function taskReducer(state: TaskState, action: TaskAction): TaskState {
   switch (action.type) {
+    case 'REORDER_TASKS':
+      return { ...state, tasks: action.payload };
     case 'ADD_TASK': {
       const newTask: Task = {
         id: generateId(),
@@ -57,8 +62,11 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
         dueDate: action.payload.dueDate,
         priority: action.payload.priority,
         subtasks: [],
+        position: 0,
       };
-      return { ...state, tasks: [newTask, ...state.tasks] };
+      // Incrementamos la posición de todas las tareas existentes para dejar hueco en el índice 0
+      const shiftedTasks = state.tasks.map(t => ({ ...t, position: t.position + 1 }));
+      return { ...state, tasks: [newTask, ...shiftedTasks] };
     }
     case 'TOGGLE_TASK':
       return {
@@ -152,20 +160,27 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
 // --- Hook ---
 
 export function useTasks() {
-  // Inicializamos el estado desde LocalStorage
+  const [savedTasks, setSavedTasks] = useLocalStorage<Task[]>('task-flow-tasks', []);
+
+  // Inicializamos el estado desde LocalStorage con migración de posición
   const [state, dispatch] = useReducer(taskReducer, {
-    tasks: JSON.parse(localStorage.getItem('task-flow-tasks') || '[]').map((t: any) => ({
-      ...t,
-      subtasks: t.subtasks || []
-    })),
+    tasks: (() => {
+      return savedTasks.map((t: any, index: number) => ({
+        ...t,
+        subtasks: t.subtasks || [],
+        position: typeof t.position === 'number' ? t.position : index
+      }));
+    })(),
     filter: 'all',
     searchQuery: '',
   });
 
-  // Sincronización con LocalStorage
+  // Sincronización con LocalStorage vía el setter del hook
+  // Debido a que el drag inmediato es local en TaskList, este effect solo
+  // se dispara una vez al final del drag (onDragEnd -> onReorder).
   useEffect(() => {
-    localStorage.setItem('task-flow-tasks', JSON.stringify(state.tasks));
-  }, [state.tasks]);
+    setSavedTasks(state.tasks);
+  }, [state.tasks, setSavedTasks]);
 
   const { tasks, filter, searchQuery } = state;
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
@@ -228,18 +243,22 @@ export function useTasks() {
     dispatch({ type: 'DELETE_SUBTASK', payload: { taskId, subtaskId } });
   };
 
-  // Lógica de filtrado y búsqueda dinámicos
-  const filteredTasks = useMemo(() => {
-    let result = tasks;
+  const reorderTasks = (newTasks: Task[]) => {
+    dispatch({ type: 'REORDER_TASKS', payload: newTasks });
+  };
 
-    // Primero aplicamos el filtro de estado
+  // Lógica de filtrado, búsqueda y ORDENACIÓN dinámica
+  const filteredTasks = useMemo(() => {
+    let result = [...tasks]; // Copia para no mutar el estado durante el sort
+
+    // Filtro de estado
     if (filter === 'active') {
       result = result.filter((t) => !t.completed);
     } else if (filter === 'completed') {
       result = result.filter((t) => t.completed);
     }
 
-    // Luego aplicamos el filtro de búsqueda
+    // Filtro de búsqueda
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase().trim();
       result = result.filter((t) =>
@@ -248,7 +267,8 @@ export function useTasks() {
       );
     }
 
-    return result;
+    // Ordenación por posición (Drag & Drop ready)
+    return result.sort((a, b) => a.position - b.position);
   }, [tasks, filter, debouncedSearchQuery]);
 
   // Estadísticas rápidas
@@ -273,8 +293,7 @@ export function useTasks() {
     addSubtask,
     toggleSubtask,
     deleteSubtask,
+    reorderTasks,
     stats,
   };
 }
-
-
