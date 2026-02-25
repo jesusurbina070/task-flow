@@ -40,7 +40,8 @@ type TaskAction =
   | { type: 'SET_FILTER'; payload: FilterStatus }
   | { type: 'SET_SEARCH_QUERY'; payload: string }
   | { type: 'ADD_SUBTASK'; payload: { taskId: string; title: string } }
-  | { type: 'TOGGLE_SUBTASK'; payload: { taskId: string; subtaskId: string } };
+  | { type: 'TOGGLE_SUBTASK'; payload: { taskId: string; subtaskId: string } }
+  | { type: 'DELETE_SUBTASK'; payload: { taskId: string; subtaskId: string } };
 
 // --- Reducer Function ---
 
@@ -99,7 +100,10 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
               title: action.payload.title.trim(),
               completed: false,
             };
-            return { ...task, subtasks: [...task.subtasks, newSubtask] };
+            return {
+              ...task,
+              subtasks: [...(task.subtasks || []), newSubtask]
+            };
           }
           return task;
         }),
@@ -109,11 +113,32 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
         ...state,
         tasks: state.tasks.map((task) => {
           if (task.id === action.payload.taskId) {
+            const updatedSubtasks = (task.subtasks || []).map((st) =>
+              st.id === action.payload.subtaskId ? { ...st, completed: !st.completed } : st
+            );
+
+            // Auto-complete logic: 
+            // 1. If all subtasks are completed (and there is at least one), the main task becomes completed.
+            // 2. If at least one subtask is now incomplete, the main task becomes incomplete ONLY IF it was marked as completed previously.
+            const allSubtasksDone = updatedSubtasks.length > 0 && updatedSubtasks.every(st => st.completed);
+
             return {
               ...task,
-              subtasks: task.subtasks.map((st) =>
-                st.id === action.payload.subtaskId ? { ...st, completed: !st.completed } : st
-              ),
+              subtasks: updatedSubtasks,
+              completed: allSubtasksDone ? true : (allSubtasksDone === false && task.completed ? false : task.completed)
+            };
+          }
+          return task;
+        }),
+      };
+    case 'DELETE_SUBTASK':
+      return {
+        ...state,
+        tasks: state.tasks.map((task) => {
+          if (task.id === action.payload.taskId) {
+            return {
+              ...task,
+              subtasks: (task.subtasks || []).filter((st) => st.id !== action.payload.subtaskId),
             };
           }
           return task;
@@ -129,7 +154,10 @@ function taskReducer(state: TaskState, action: TaskAction): TaskState {
 export function useTasks() {
   // Inicializamos el estado desde LocalStorage
   const [state, dispatch] = useReducer(taskReducer, {
-    tasks: JSON.parse(localStorage.getItem('task-flow-tasks') || '[]'),
+    tasks: JSON.parse(localStorage.getItem('task-flow-tasks') || '[]').map((t: any) => ({
+      ...t,
+      subtasks: t.subtasks || []
+    })),
     filter: 'all',
     searchQuery: '',
   });
@@ -191,6 +219,15 @@ export function useTasks() {
     dispatch({ type: 'TOGGLE_SUBTASK', payload: { taskId, subtaskId } });
   };
 
+  /**
+   * Eliminar una subtarea
+   * @param taskId ID de la tarea padre
+   * @param subtaskId ID de la subtarea
+   */
+  const deleteSubtask = (taskId: string, subtaskId: string) => {
+    dispatch({ type: 'DELETE_SUBTASK', payload: { taskId, subtaskId } });
+  };
+
   // Lógica de filtrado y búsqueda dinámicos
   const filteredTasks = useMemo(() => {
     let result = tasks;
@@ -205,8 +242,8 @@ export function useTasks() {
     // Luego aplicamos el filtro de búsqueda
     if (debouncedSearchQuery.trim()) {
       const query = debouncedSearchQuery.toLowerCase().trim();
-      result = result.filter((t) => 
-        t.title.toLowerCase().includes(query) || 
+      result = result.filter((t) =>
+        t.title.toLowerCase().includes(query) ||
         t.tag.toLowerCase().includes(query)
       );
     }
@@ -235,7 +272,9 @@ export function useTasks() {
     clearCompleted,
     addSubtask,
     toggleSubtask,
+    deleteSubtask,
     stats,
   };
 }
+
 

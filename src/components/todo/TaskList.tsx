@@ -7,9 +7,19 @@ interface TaskListProps {
     tasks: Task[];
     onToggle: (id: string) => void;
     onDelete: (id: string) => void;
+    onAddSubtask: (taskId: string, text: string) => void;
+    onToggleSubtask: (taskId: string, subtaskId: string) => void;
+    onDeleteSubtask: (taskId: string, subtaskId: string) => void;
 }
 
-export default function TaskList({ tasks, onToggle, onDelete }: TaskListProps) {
+export default function TaskList({
+    tasks,
+    onToggle,
+    onDelete,
+    onAddSubtask,
+    onToggleSubtask,
+    onDeleteSubtask
+}: TaskListProps) {
     return (
         <div className="space-y-3">
             <AnimatePresence mode="popLayout">
@@ -20,6 +30,9 @@ export default function TaskList({ tasks, onToggle, onDelete }: TaskListProps) {
                             task={task}
                             onToggle={onToggle}
                             onDelete={onDelete}
+                            onAddSubtask={onAddSubtask}
+                            onToggleSubtask={onToggleSubtask}
+                            onDeleteSubtask={onDeleteSubtask}
                         />
                     ))
                 ) : (
